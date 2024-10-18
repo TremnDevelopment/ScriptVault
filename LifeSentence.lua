@@ -28,21 +28,6 @@ local SettingVariables = {
     }
 }
 
--- <> Parts Creation <> --
---[[local ExploitationFolder = Workspace:FindFirstChild("ExploitationFolder") or Instance.new("Folder")
-ExploitationFolder.Name = "ExploitationFolder"
-ExploitationFolder.Parent = Workspace
-
-local SafeZonePart = Instance.new("Part")
-SafeZonePart.Name = "SafeZonePart"
-SafeZonePart.Anchored = true
-SafeZonePart.CanCollide = false
-SafeZonePart.Size = Vector3.new(5, 5, 5)
-SafeZonePart.Transparency = 0.75
-SafeZonePart.Color = Color3.new(0, 255, 0)
-SafeZonePart.CFrame = CFrame.new(987.774292, 4.96115303, 124.865982, -0.729111016, -7.28868201e-08, 0.684395432, -1.15341052e-07, 1, -1.63788521e-08, -0.684395432, -9.08808886e-08, -0.729111016)
-SafeZonePart.Parent = ExploitationFolder]]
-
 -- <> Loadstrings <> --
 local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/xHeptc/Kavo-UI-Library/main/source.lua"))()
 

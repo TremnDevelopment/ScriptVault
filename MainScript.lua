@@ -1,14 +1,9 @@
 local placeId = game.PlaceId
 
-local function getGamePlaceId()
-  if placeId then
-    return placeId
-  end
-  return nil
+local authorizedPlaces = {
+  [13083893317] = "https://raw.githubusercontent.com/TremnDevelopment/ScriptVault/refs/heads/main/LifeSentence.lua"
+}
+
+if authorizedPlaces and authorizedPlaces[placeId] then
+  loadstring(game:HttpGet(authorizedPlaces[placeId], true))()
 end
-
-local suc, err = pcall(function()
-  loadstring(game:HttpGet("https://raw.githubusercontent.com/TremnDevelopment/ScriptVault/refs/heads/main/" .. getGamePlaceId() .. ".lua"))()
-end)
-
-if not suc then error(err) end
