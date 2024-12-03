@@ -255,7 +255,7 @@ local function setupFluent()
     Tabs.Main:AddSection("Auto Farm Section")
     Tabs.Main:AddToggle("autoCast", { Title = "Auto Cast", Default = isAutoCastEnabled }):OnChanged(function()
         isAutoCastEnabled = Options.autoCast.Value
-        PlayerData.PlayerGui.hud.safezone.Visible = isAutoCastEnabled
+        PlayerData.PlayerGui.hud.safezone.Visible = isAutoCastEnabled and false or true
         if isAutoCastEnabled then
             autoCast()
         end
