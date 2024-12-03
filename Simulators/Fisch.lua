@@ -265,6 +265,7 @@ local function setupFluent()
 
     --- << Miscellaneous Tab >> ---
     
+    Tabs.Miscellaneous:AddSection("Player Section")
     Tabs.Miscellaneous:AddToggle("noclip", { Title = "NoClip", Default = isNoClipEnabled }):OnChanged(function()
         isNoClipEnabled = Options.noclip.Value
         if isNoClipEnabled then
@@ -311,6 +312,19 @@ local function setupFluent()
             PlayerData.LocalCharacter.Humanoid.JumpPower = JumppowerValue
         end
     })
+
+    Tabs.Miscellaneous:AddSection("Game Section")
+    Tabs.Miscellaneous:AddToggle("bypassradar", { Title = "Bypass Fish Radar", Default = false }):OnChanged(function()
+        for _, v in pairs(game:GetService("CollectionService"):GetTagged("radarTag")) do
+			if v:IsA("BillboardGui") or v:IsA("SurfaceGui") then
+				v.Enabled = Options.bypassradar.Value
+			end
+		end
+    end)
+
+    Tabs.Miscellaneous:AddToggle("disableoxygen", { Title = "Disable Oxygen", Default = false }):OnChanged(function()
+        PlayerData.LocalCharacter.client.oxygen.Disabled = Options.disableoxygen.Value
+    end)
 
     --- << Library Manager >> ---
     
