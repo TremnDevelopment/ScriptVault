@@ -119,6 +119,7 @@ local function autoCast()
     if EquippedRod and string.find(EquippedRod, "Rod") then
         if PlayerData.Backpack:FindFirstChild(EquippedRod) then
             PlayerData.LocalCharacter.Humanoid:EquipTool(PlayerData.Backpack:FindFirstChild(EquippedRod))
+            wait(0.1)
         end
 
         if PlayerData.LocalCharacter then
@@ -227,7 +228,7 @@ local function setupFluent()
         Title = "Status",
         Content = "Username: " .. PlayerData.LocalDisplayName .. "(@" .. PlayerData.LocalName .. ")\nCash on Execute: ".. PlayerData.Player.leaderstats["C$"].Value or "N/A"
     })
-    
+
     --- << Main Tab >> ---
     
     --- << Auto Farm Section >> ---
