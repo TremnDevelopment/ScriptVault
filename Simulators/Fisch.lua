@@ -30,6 +30,9 @@ end
 local Services = initializeServices()
 local PlayerData = initializePlayerData(Services)
 
+local DescendantAddedConnection
+local DescendantRemovingConnection
+
 --- << Loading Screen Check >> ---
 
 repeat task.wait(0.2) until PlayerData.Player:WaitForChild("DoneLoading").Value == true
@@ -77,8 +80,10 @@ local function autoShake()
 end
 
 local function startAutoShake()
-    if isAutoShakeEnabled then
-        AutoShakeConnection = Services.RunService.RenderStepped:Connect(autoShake)
+    if isAutoShakeEnabled and not Fluent.Unloaded then
+        AutoShakeConnection = Services.RunService.RenderStepped:Connect(function()
+            autoShake()
+        end)
     end
 end
 
@@ -101,7 +106,7 @@ local function autoReel()
 end
 
 local function startAutoReel()
-    if isAutoReelEnabled then
+    if isAutoReelEnabled and not Fluent.Unloaded then
         autoReel()
     end
 end
@@ -147,24 +152,24 @@ end
 
 -- << Event Handlers >> --
 
-PlayerData.PlayerGui.DescendantAdded:Connect(function(descendant)
+DescendantAddedConnection = PlayerData.PlayerGui.DescendantAdded:Connect(function(descendant)
     if descendant.Name == "button" and descendant.Parent.Name == "safezone" then
-        if isAutoShakeEnabled then
+        if isAutoShakeEnabled and not Fluent.Unloaded then
             startAutoShake()
         end
     elseif descendant.Name == "playerbar" and descendant.Parent.Name == "bar" then
         stopAutoShake()
-        if isAutoReelEnabled then
+        if isAutoReelEnabled and not Fluent.Unloaded then
             wait(0.5)
             startAutoReel()
         end
     end
 end)
 
-PlayerData.PlayerGui.DescendantRemoving:Connect(function(descendant)
+DescendantRemovingConnection = PlayerData.PlayerGui.DescendantRemoving:Connect(function(descendant)
     if descendant.Name == "playerbar" and descendant.Parent.Name == "bar" then
         stopAutoReel()
-        if isAutoCastEnabled then
+        if isAutoCastEnabled and not Fluent.Unloaded then
             wait(0.4)
             autoCast()
         end
@@ -172,7 +177,7 @@ PlayerData.PlayerGui.DescendantRemoving:Connect(function(descendant)
 end)
 
 local function NoClip()
-    while isNoClipEnabled do
+    while isNoClipEnabled and not Fluent.Unloaded do
         for i, v in pairs(PlayerData.LocalCharacter:GetDescendants()) do
             if v:IsA("BasePart") and v.CanCollide == true then
                 v.CanCollide = false
@@ -321,6 +326,17 @@ local function setupFluent()
     Fluent:Notify({ Title = "Fluent", Content = "The script has been loaded.", Duration = 8 })
     SaveManager:LoadAutoloadConfig()
 
+    while task.wait(1) do
+        game:GetService("ReplicatedStorage"):WaitForChild("events"):WaitForChild("afk"):FireServer(false)
+        if Fluent.Unloaded then
+            if AutoReelConnection ~= nil then AutoReelConnection:Disconnect() AutoReelConnection = nil end
+            if AutoShakeConnection ~= nil then AutoShakeConnection:Disconnect() AutoShakeConnection = nil end
+            if DescendantAddedConnection ~= nil then DescendantAddedConnection:Disconnect() DescendantAddedConnection = nil end
+            if DescendantRemovingConnection ~= nil then DescendantRemovingConnection:Disconnect() DescendantRemovingConnection = nil end
+            print('disabled all connections.')
+            break
+        end
+    end
 end
 
 setupFluent()
