@@ -30,8 +30,10 @@ end
 local Services = initializeServices()
 local PlayerData = initializePlayerData(Services)
 
-local DescendantAddedConnection
-local DescendantRemovingConnection
+local DescendantAddedConnection = nil
+local DescendantRemovingConnection = nil
+
+local TeleportSpots = Workspace:FindFirstChild("world"):WaitForChild("spawns"):WaitForChild("TpSpots")
 
 --- << Loading Screen Check >> ---
 
@@ -43,6 +45,15 @@ local isAutoCastEnabled = false
 local isAutoReelEnabled = false
 local isAutoShakeEnabled = false
 
+--- << Auto Zone Variables >> ---
+
+local NormalZones = {"Coming Soon"}
+local WorldEventTable = {"Strange Whirlpool", "Great Hammerhead Shark", "Great White Shark", "Whale Shark", "The Depths - Serpent"}
+local SelectedEvents = {}
+
+local isAutoZoneEnabled = false
+local SelectedNormalZone = nil
+
 --- << Miscellaneous Variables >> ---
 
 local WalkspeedValue = 16 -- Default
@@ -53,8 +64,15 @@ local isWalkonWaterEnabled = true
 
 --- << Teleport Variables >> --- 
 
-local WorldZones = {}
-local NPCZones = {}
+local PlaceTable = {}
+local NPCTable = {}
+local ItemTable = {}
+
+for _, place in ipairs(TeleportSpots:GetChildren()) do
+    if table.find(PlaceTable, place.Name) == nil then
+        table.insert(PlaceTable, place.Name)
+    end
+end
 
 -- << Auto Functions >> --
 
@@ -75,15 +93,12 @@ local function autoShake()
             Services.GuiService.SelectedObject = nil
         end
     end, function(err)
-        warn("Error in autoShake: ", err)
     end)
 end
 
 local function startAutoShake()
     if isAutoShakeEnabled and not Fluent.Unloaded then
-        AutoShakeConnection = Services.RunService.RenderStepped:Connect(function()
-            autoShake()
-        end)
+        AutoShakeConnection = Services.RunService.Heartbeat:Connect(autoShake)
     end
 end
 
@@ -225,7 +240,7 @@ local function setupFluent()
     Tabs.Home:AddSection("Reminder Section")
     Tabs.Home:AddParagraph({
         Title = "Unstable",
-        Content = "Welcome " .. PlayerData.LocalDisplayName .. "(@" .. PlayerData.LocalName .. ")! Enjoy this script."
+        Content = "Welcome " .. PlayerData.LocalDisplayName .. "(@" .. PlayerData.LocalName .. ")! Enjoy this script.\nDont expect it to be stable lol"
     })
 
     Tabs.Home:AddSection("Status Section")
@@ -240,6 +255,7 @@ local function setupFluent()
     Tabs.Main:AddSection("Auto Farm Section")
     Tabs.Main:AddToggle("autoCast", { Title = "Auto Cast", Default = isAutoCastEnabled }):OnChanged(function()
         isAutoCastEnabled = Options.autoCast.Value
+        PlayerData.PlayerGui.hud.safezone.Visible = isAutoCastEnabled
         if isAutoCastEnabled then
             autoCast()
         end
@@ -262,6 +278,28 @@ local function setupFluent()
             stopAutoReel()
         end
     end)
+
+    --- << Auto Zone Section >> ---
+    Tabs.Main:AddSection("Auto Zone Section")
+    Tabs.Main:AddDropdown("normalzones", { Title = "Select Normal Zone", Values = NormalZones, Multi = false, Default = 1 })
+
+    --- << Teleport Tab >> ---
+    
+    --- << Place Teleport Section >> ---
+    Tabs.Teleport:AddSection("Place Teleport Section")
+    Tabs.Teleport:AddDropdown("placeteleport", { Title = "Place to Teleport", Values = PlaceTable, Multi = false, Default = 1 })--[[:OnChanged(function()
+        local Place = TeleportSpots[Options.placeteleport.Value]
+        local wasNoclipEnabled
+        if Place ~= nil then
+            if isNoClipEnabled then
+                isNoClipEnabled = false
+                wasNoclipEnabled = true
+            end
+            PlayerData.LocalCharacter.HumanoidRootPart.CFrame = Place.CFrame + Vector3.new(0, 10, 0)
+            Options.placeteleport:SetValue("")
+            if wasNoclipEnabled then isNoClipEnabled = true; task.wait(0.1); task.spawn(NoClip) end
+        end
+    end)]] -- laggy
 
     --- << Miscellaneous Tab >> ---
     
