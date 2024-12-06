@@ -32,6 +32,8 @@ local PlayerData = initializePlayerData(Services)
 
 local DescendantAddedConnection = nil
 local DescendantRemovingConnection = nil
+local ChildAddedConnection = nil
+local BobberRemovedConnection = nil
 
 local TeleportSpots = Workspace:FindFirstChild("world"):WaitForChild("spawns"):WaitForChild("TpSpots")
 
@@ -155,7 +157,7 @@ local function autoCast()
                                 HasBobber = Tool:FindFirstChild("bobber")
                                 if HasBobber then return end
                                 castEvent:FireServer(math.random(99, 100))
-                                task.wait(0.1)
+                                task.wait(0.2)
                             end
                         end
                     end
@@ -188,6 +190,21 @@ DescendantRemovingConnection = PlayerData.PlayerGui.DescendantRemoving:Connect(f
             wait(0.4)
             autoCast()
         end
+    end
+end)
+
+ChildAddedConnection = PlayerData.LocalCharacter.ChildAdded:Connect(function(child)
+    if child:IsA("Tool") and string.find(child.Name, "Rod") then
+        if isAutoCastEnabled then
+            autoCast()
+        end
+        BobberRemovedConnection = child.DescendantRemoving:Connect(function(descendant)
+            if descendant.Name == "bobber" then
+                if isAutoCastEnabled then
+                    autoCast()
+                end
+            end
+        end)
     end
 end)
 
@@ -287,19 +304,13 @@ local function setupFluent()
     
     --- << Place Teleport Section >> ---
     Tabs.Teleport:AddSection("Place Teleport Section")
-    Tabs.Teleport:AddDropdown("placeteleport", { Title = "Place to Teleport", Values = PlaceTable, Multi = false, Default = 1 })--[[:OnChanged(function()
+    Tabs.Teleport:AddDropdown("placeteleport", { Title = "Place to Teleport", Values = PlaceTable, Multi = false, Default = 1 }):OnChanged(function()
         local Place = TeleportSpots[Options.placeteleport.Value]
-        local wasNoclipEnabled
         if Place ~= nil then
-            if isNoClipEnabled then
-                isNoClipEnabled = false
-                wasNoclipEnabled = true
-            end
+            task.wait(0)
             PlayerData.LocalCharacter.HumanoidRootPart.CFrame = Place.CFrame + Vector3.new(0, 10, 0)
-            Options.placeteleport:SetValue("")
-            if wasNoclipEnabled then isNoClipEnabled = true; task.wait(0.1); task.spawn(NoClip) end
         end
-    end)]] -- laggy
+    end)
 
     --- << Miscellaneous Tab >> ---
     
@@ -385,7 +396,8 @@ local function setupFluent()
             if AutoShakeConnection ~= nil then AutoShakeConnection:Disconnect() AutoShakeConnection = nil end
             if DescendantAddedConnection ~= nil then DescendantAddedConnection:Disconnect() DescendantAddedConnection = nil end
             if DescendantRemovingConnection ~= nil then DescendantRemovingConnection:Disconnect() DescendantRemovingConnection = nil end
-            print('disabled all connections.')
+            if ChildAddedConnection ~= nil then ChildAddedConnection:Disconnect() ChildAddedConnection = nil end
+            if BobberRemovedConnection ~= nil then BobberRemovedConnection:Disconnect() BobberRemovedConnection = nil end
             break
         end
     end
