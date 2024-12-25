@@ -26,7 +26,7 @@ getgenv().Variables = {
         ScaffoldExtend = 2
     },
     NukerVariables = {
-        NukerEnabled = true,
+        NukerEnabled = false,
         NukerRange = 40
     }
 }
