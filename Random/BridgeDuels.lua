@@ -147,10 +147,6 @@ local function Initialize()
                 
                             if type(KillauraTarget) == "userdata" and KillauraTarget:IsA("Model") then
                                 ToolService:WaitForChild("RF"):WaitForChild("AttackPlayerWithSword"):InvokeServer(KillauraTarget, true, Sword.Name)
-                                if getgenv().Variables.KillauraVariables.TrollEnemy then
-                                    Player.Character.HumanoidRootPart.CFrame = CFrame.new(Player.Character.HumanoidRootPart.Position) + Vector3.new(0, 100, 0)
-                                    Player.Character.HumanoidRootPart.CFrame = CFrame.new(Player.Character.HumanoidRootPart.Position) - Vector3.new(0, 100, 0)
-                                end
                                 ToolService:WaitForChild("RF"):WaitForChild("ToggleBlockSword"):InvokeServer(true, Sword.Name)
                 
                                 if getgenv().Variables.KillauraVariables.BowauraEnabled then
@@ -182,10 +178,6 @@ local function Initialize()
                                     local entity = entData[1]
                                     if entity and not targetsProcessed[entity] then
                                         ToolService:WaitForChild("RF"):WaitForChild("AttackPlayerWithSword"):InvokeServer(entity, true, Sword.Name)
-                                        if getgenv().Variables.KillauraVariables.TrollEnemy then
-                                            Player.Character.HumanoidRootPart.CFrame = CFrame.new(Player.Character.HumanoidRootPart.Position) + Vector3.new(0, 100, 0)
-                                            Player.Character.HumanoidRootPart.CFrame = CFrame.new(Player.Character.HumanoidRootPart.Position) - Vector3.new(0, 100, 0)
-                                        end
                                         ToolService:WaitForChild("RF"):WaitForChild("ToggleBlockSword"):InvokeServer(true, Sword.Name)
                                         targetsProcessed[entity] = true
                                 
@@ -241,10 +233,6 @@ local function Initialize()
 
     Tabs.Main:AddToggle("bowaura", { Title = "Bow Aura", Default = getgenv().Variables.KillauraVariables.BowauraEnabled }):OnChanged(function()
         getgenv().Variables.KillauraVariables.BowauraEnabled = FluentOptions.bowaura.Value
-    end)
-
-    Tabs.Main:AddToggle("troll", { Title = "Troll Enemy", Default = false }):OnChanged(function()
-        getgenv().Variables.KillauraVariables.TrollEnemy = FluentOptions.troll.Value
     end)
 
     Tabs.Main:AddDropdown("killauraType", { Title = "Killaura Type", Values = {"Regular", "Switch"}, Multi = false, Default = 1 }):OnChanged(function()
