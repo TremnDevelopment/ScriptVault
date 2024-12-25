@@ -174,6 +174,7 @@ local function Initialize()
                                 
                                 for _, entData in pairs(KillauraTarget) do
                                     local entity = entData[1]
+                                    print(entity)
                                     if entity and not targetsProcessed[entity] then
                                         ToolService:WaitForChild("RF"):WaitForChild("AttackPlayerWithSword"):InvokeServer(entity, true, Sword.Name)
                                         ToolService:WaitForChild("RF"):WaitForChild("ToggleBlockSword"):InvokeServer(true, Sword.Name)
@@ -199,7 +200,7 @@ local function Initialize()
                                             end
                                         end
                                     end
-                                    task.wait()
+                                    task.wait(0.1)
                                 end                                
                             end
                         else
