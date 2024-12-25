@@ -178,6 +178,7 @@ local function Initialize()
                                 local bowEquipped = false
                                 
                                 for _, entData in pairs(KillauraTarget) do
+                                    print('e')
                                     local entity = entData[1]
                                     if entity and not targetsProcessed[entity] then
                                         ToolService:WaitForChild("RF"):WaitForChild("AttackPlayerWithSword"):InvokeServer(entity, true, Sword.Name)
