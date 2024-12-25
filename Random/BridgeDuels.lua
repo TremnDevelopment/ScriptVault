@@ -170,6 +170,7 @@ local function Initialize()
                                 local PlayerGui = Player:FindFirstChild("PlayerGui")
                                 local BowauraEnabled = getgenv().Variables.KillauraVariables.BowauraEnabled
                                 local targetsProcessed = {}
+                                local bowEquipped = false
                                 
                                 for _, entData in pairs(KillauraTarget) do
                                     local entity = entData[1]
@@ -177,25 +178,29 @@ local function Initialize()
                                         ToolService:WaitForChild("RF"):WaitForChild("AttackPlayerWithSword"):InvokeServer(entity, true, Sword.Name)
                                         ToolService:WaitForChild("RF"):WaitForChild("ToggleBlockSword"):InvokeServer(true, Sword.Name)
                                         targetsProcessed[entity] = true
-                                        
+                                
                                         if BowauraEnabled and PlayerGui and PlayerGui.Hotbar.MainFrame.Background.Bar.ArrowProgress.Progress.Size == UDim2.new(0, 0, 1, 0) then
-                                            local InvBow = GetToolFromBackpack(Player, "Bow")
-                                            if InvBow then
-                                                Player.Character.Humanoid:EquipTool(InvBow)
-                                                local Bow = GetEquippedTool(Player, "Bow")
-                                                if Bow then
-                                                    if type(entity) == "userdata" and entity:IsA("Model") then
-                                                        local Target = Services.PlayerService:WaitForChild(entity.Name)
-                                                        if Target then
-                                                            Bow:WaitForChild("__comm__"):WaitForChild("RF"):FindFirstChild("Fire"):InvokeServer(Target.Character.HumanoidRootPart.Position, 9e9)
-                                                        end
+                                            if not bowEquipped then
+                                                local InvBow = GetToolFromBackpack(Player, "Bow")
+                                                if InvBow then
+                                                    Player.Character.Humanoid:EquipTool(InvBow)
+                                                    bowEquipped = true
+                                                end
+                                            end
+                                
+                                            local Bow = GetEquippedTool(Player, "Bow")
+                                            if Bow then
+                                                if type(entity) == "userdata" and entity:IsA("Model") then
+                                                    local Target = Services.PlayerService:WaitForChild(entity.Name)
+                                                    if Target and IsPlayerAlive(Target) then
+                                                        Bow:WaitForChild("__comm__"):WaitForChild("RF"):FindFirstChild("Fire"):InvokeServer(Target.Character.HumanoidRootPart.Position, 9e9)
                                                     end
                                                 end
                                             end
                                         end
                                     end
                                     task.wait()
-                                end
+                                end                                
                             end
                         else
                             local InvSword = GetToolFromBackpack(Player, "Sword")
