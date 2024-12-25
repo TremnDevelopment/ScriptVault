@@ -146,13 +146,11 @@ local function Initialize()
                                 or GetAllNearestEntities(tonumber(getgenv().Variables.KillauraVariables.KillauraRange), getgenv().Variables.KillauraVariables.TeamCheck)
                 
                             if type(KillauraTarget) == "userdata" and KillauraTarget:IsA("Model") then
-                                if getgenv().Variables.KillauraVariables.TrollEnemy then
-                                    task.delay(0.1, function()
-                                        Player.Character.HumanoidRootPart.CFrame = CFrame.new(Player.Character.HumanoidRootPart.Position) + Vector3.new(0, 100, 0)
-                                        Player.Character.HumanoidRootPart.CFrame = CFrame.new(Player.Character.HumanoidRootPart.Position) - Vector3.new(0, 100, 0)
-                                    end)
-                                end
                                 ToolService:WaitForChild("RF"):WaitForChild("AttackPlayerWithSword"):InvokeServer(KillauraTarget, true, Sword.Name)
+                                if getgenv().Variables.KillauraVariables.TrollEnemy then
+                                    Player.Character.HumanoidRootPart.CFrame = CFrame.new(Player.Character.HumanoidRootPart.Position) + Vector3.new(0, 100, 0)
+                                    Player.Character.HumanoidRootPart.CFrame = CFrame.new(Player.Character.HumanoidRootPart.Position) - Vector3.new(0, 100, 0)
+                                end
                                 ToolService:WaitForChild("RF"):WaitForChild("ToggleBlockSword"):InvokeServer(true, Sword.Name)
                 
                                 if getgenv().Variables.KillauraVariables.BowauraEnabled then
@@ -182,13 +180,11 @@ local function Initialize()
                                 for _, entData in pairs(KillauraTarget) do
                                     local entity = entData[1]
                                     if entity and not targetsProcessed[entity] then
-                                        if getgenv().Variables.KillauraVariables.TrollEnemy then
-                                            task.delay(0.1, function()
-                                                Player.Character.HumanoidRootPart.CFrame = CFrame.new(Player.Character.HumanoidRootPart.Position) + Vector3.new(0, 100, 0)
-                                                Player.Character.HumanoidRootPart.CFrame = CFrame.new(Player.Character.HumanoidRootPart.Position) - Vector3.new(0, 100, 0)
-                                            end)
-                                        end
                                         ToolService:WaitForChild("RF"):WaitForChild("AttackPlayerWithSword"):InvokeServer(entity, true, Sword.Name)
+                                        if getgenv().Variables.KillauraVariables.TrollEnemy then
+                                            Player.Character.HumanoidRootPart.CFrame = CFrame.new(Player.Character.HumanoidRootPart.Position) + Vector3.new(0, 100, 0)
+                                            Player.Character.HumanoidRootPart.CFrame = CFrame.new(Player.Character.HumanoidRootPart.Position) - Vector3.new(0, 100, 0)
+                                        end
                                         ToolService:WaitForChild("RF"):WaitForChild("ToggleBlockSword"):InvokeServer(true, Sword.Name)
                                         targetsProcessed[entity] = true
                                 
