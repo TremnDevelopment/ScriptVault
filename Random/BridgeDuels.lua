@@ -200,6 +200,7 @@ local function Initialize()
                                             end
                                         end
                                     end
+                                    KillauraTarget = nil
                                     task.wait(0.1)
                                 end                                
                             end
