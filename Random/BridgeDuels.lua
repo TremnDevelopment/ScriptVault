@@ -174,8 +174,8 @@ local function Initialize()
                                 
                                 for _, entData in pairs(KillauraTarget) do
                                     local entity = entData[1]
-                                    print(entity)
                                     if entity and not targetsProcessed[entity] then
+                                        Services.PlayerService.LocalPlayer.Character:SetPrimaryPartCFrame(CFrame.new(Services.PlayerService.LocalPlayer.Character.HumanoidRootPart.Position, Services.PlayerService:WaitForChild(entity.Name).Character.HumanoidRootPart.CFrame.Position + Services.PlayerService:WaitForChild(entity.Name).Character.HumanoidRootPart.CFrame.LookVector))
                                         ToolService:WaitForChild("RF"):WaitForChild("AttackPlayerWithSword"):InvokeServer(entity, true, Sword.Name)
                                         ToolService:WaitForChild("RF"):WaitForChild("ToggleBlockSword"):InvokeServer(true, Sword.Name)
                                         targetsProcessed[entity] = true
