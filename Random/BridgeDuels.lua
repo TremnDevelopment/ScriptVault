@@ -13,7 +13,6 @@ getgenv().Variables = {
         KillauraEnabled = true,
         BowauraEnabled = true,
         KillauraRange = 20,
-        KillauraType = "Regular",
         TrollEnemy = true,
         TeamCheck = false
     },  
@@ -141,10 +140,8 @@ local function Initialize()
                     if ToolService then
                         local Sword = GetEquippedTool(Player, "Sword")
                         if Sword then
-                            KillauraTarget = getgenv().Variables.KillauraVariables.KillauraType == "Regular"
-                                and GetNearestEntity(tonumber(getgenv().Variables.KillauraVariables.KillauraRange), getgenv().Variables.KillauraVariables.TeamCheck)
-                                or GetAllNearestEntities(tonumber(getgenv().Variables.KillauraVariables.KillauraRange), getgenv().Variables.KillauraVariables.TeamCheck)
-                
+                            KillauraTarget = GetNearestEntity(tonumber(getgenv().Variables.KillauraVariables.KillauraRange), getgenv().Variables.KillauraVariables.TeamCheck)
+
                             if type(KillauraTarget) == "userdata" and KillauraTarget:IsA("Model") then
                                 ToolService:WaitForChild("RF"):WaitForChild("AttackPlayerWithSword"):InvokeServer(KillauraTarget, true, Sword.Name)
                                 ToolService:WaitForChild("RF"):WaitForChild("ToggleBlockSword"):InvokeServer(true, Sword.Name)
@@ -166,43 +163,6 @@ local function Initialize()
                                             end
                                         end
                                     end
-                                end
-                            elseif type(KillauraTarget) == "table" and next(KillauraTarget) ~= nil then
-                                local PlayerGui = Player:FindFirstChild("PlayerGui")
-                                local BowauraEnabled = getgenv().Variables.KillauraVariables.BowauraEnabled
-                                local targetsProcessed = {}
-                                local bowEquipped = false
-                                
-                                for _, entData in pairs(KillauraTarget) do
-                                    print('e')
-                                    local entity = entData[1]
-                                    if entity and not targetsProcessed[entity] then
-                                        ToolService:WaitForChild("RF"):WaitForChild("AttackPlayerWithSword"):InvokeServer(entity, true, Sword.Name)
-                                        ToolService:WaitForChild("RF"):WaitForChild("ToggleBlockSword"):InvokeServer(true, Sword.Name)
-                                        targetsProcessed[entity] = true
-                                
-                                        if BowauraEnabled and PlayerGui and PlayerGui.Hotbar.MainFrame.Background.Bar.ArrowProgress.Progress.Size == UDim2.new(0, 0, 1, 0) then
-                                            if not bowEquipped then
-                                                local InvBow = GetToolFromBackpack(Player, "Bow")
-                                                if InvBow then
-                                                    Player.Character.Humanoid:EquipTool(InvBow)
-                                                    bowEquipped = true
-                                                end
-                                            end
-                                
-                                            local Bow = GetEquippedTool(Player, "Bow")
-                                            if Bow then
-                                                if type(entity) == "userdata" and entity:IsA("Model") then
-                                                    local Target = Services.PlayerService:WaitForChild(entity.Name)
-                                                    if Target and IsPlayerAlive(Target) then
-                                                        Bow:WaitForChild("__comm__"):WaitForChild("RF"):FindFirstChild("Fire"):InvokeServer(Target.Character.HumanoidRootPart.Position, 9e9)
-                                                    end
-                                                end
-                                            end
-                                        end
-                                    end
-                                    KillauraTarget = nil
-                                    task.wait(0.1)
                                 end                                
                             end
                         else
@@ -220,7 +180,6 @@ local function Initialize()
             Services.PlayerService.LocalPlayer.PlayerGui.Notifications.Notifications.Visible = true
             KillauraTarget = nil
             if KillauraLoop ~= nil then
-                print('yes')
                 KillauraLoop:Disconnect()
                 KillauraLoop = nil
             end
@@ -233,10 +192,6 @@ local function Initialize()
 
     Tabs.Main:AddToggle("bowaura", { Title = "Bow Aura", Default = getgenv().Variables.KillauraVariables.BowauraEnabled }):OnChanged(function()
         getgenv().Variables.KillauraVariables.BowauraEnabled = FluentOptions.bowaura.Value
-    end)
-
-    Tabs.Main:AddDropdown("killauraType", { Title = "Killaura Type", Values = {"Regular", "Switch"}, Multi = false, Default = 1 }):OnChanged(function()
-        getgenv().Variables.KillauraVariables.KillauraType = FluentOptions.killauraType.Value
     end)
 
     Tabs.Main:AddSlider("killauraRange", {
@@ -361,7 +316,7 @@ local function Initialize()
                             if PlacePos then
                                 game:GetService("ReplicatedStorage"):WaitForChild("Modules"):WaitForChild("Knit"):WaitForChild("Services"):WaitForChild("ToolService"):WaitForChild("RF"):WaitForChild("PlaceBlock"):InvokeServer(PlacePos)
                             end
-                            task.wait()
+                            task.wait(0.7)
                         end
                     end
                 end)
