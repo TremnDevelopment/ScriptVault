@@ -146,6 +146,12 @@ local function Initialize()
                                 or GetAllNearestEntities(tonumber(getgenv().Variables.KillauraVariables.KillauraRange), getgenv().Variables.KillauraVariables.TeamCheck)
                 
                             if type(KillauraTarget) == "userdata" and KillauraTarget:IsA("Model") then
+                                if getgenv().Variables.KillauraVariables.TrollEnemy then
+                                    task.delay(0.1, function()
+                                        Player.Character.HumanoidRootPart.Position = HumanoidRootPart.Position + Vector3.new(0, 100, 0)
+                                        Player.Character.HumanoidRootPart.Position = HumanoidRootPart.Position - Vector3.new(0, 100, 0)
+                                    end)
+                                end
                                 ToolService:WaitForChild("RF"):WaitForChild("AttackPlayerWithSword"):InvokeServer(KillauraTarget, true, Sword.Name)
                                 ToolService:WaitForChild("RF"):WaitForChild("ToggleBlockSword"):InvokeServer(true, Sword.Name)
                 
