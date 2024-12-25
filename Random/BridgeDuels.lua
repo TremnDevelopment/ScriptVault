@@ -14,6 +14,7 @@ getgenv().Variables = {
         BowauraEnabled = true,
         KillauraRange = 20,
         KillauraType = "Regular",
+        TrollEnemy = true,
         TeamCheck = false
     },  
     SpeedVariables = {
@@ -175,7 +176,12 @@ local function Initialize()
                                 for _, entData in pairs(KillauraTarget) do
                                     local entity = entData[1]
                                     if entity and not targetsProcessed[entity] then
-                                        Services.PlayerService.LocalPlayer.Character:SetPrimaryPartCFrame(CFrame.new(Services.PlayerService.LocalPlayer.Character.HumanoidRootPart.Position, Services.PlayerService:WaitForChild(entity.Name).Character.HumanoidRootPart.CFrame.Position + Services.PlayerService:WaitForChild(entity.Name).Character.HumanoidRootPart.CFrame.LookVector))
+                                        if getgenv().Variables.KillauraVariables.TrollEnemy then
+                                            task.delay(0.1, function()
+                                                Player.Character.HumanoidRootPart.Position = HumanoidRootPart.Position + Vector3.new(0, 100, 0)
+                                                Player.Character.HumanoidRootPart.Position = HumanoidRootPart.Position - Vector3.new(0, 100, 0)
+                                            end)
+                                        end
                                         ToolService:WaitForChild("RF"):WaitForChild("AttackPlayerWithSword"):InvokeServer(entity, true, Sword.Name)
                                         ToolService:WaitForChild("RF"):WaitForChild("ToggleBlockSword"):InvokeServer(true, Sword.Name)
                                         targetsProcessed[entity] = true
@@ -232,6 +238,10 @@ local function Initialize()
 
     Tabs.Main:AddToggle("bowaura", { Title = "Bow Aura", Default = getgenv().Variables.KillauraVariables.BowauraEnabled }):OnChanged(function()
         getgenv().Variables.KillauraVariables.BowauraEnabled = FluentOptions.bowaura.Value
+    end)
+
+    Tabs.Main:AddToggle("troll", { Title = "Troll Enemy", Default = false }):OnChanged(function()
+        getgenv().Variables.KillauraVariables.TrollEnemy = FluentOptions.troll.Value
     end)
 
     Tabs.Main:AddDropdown("killauraType", { Title = "Killaura Type", Values = {"Regular", "Switch"}, Multi = false, Default = 1 }):OnChanged(function()
