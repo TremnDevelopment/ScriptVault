@@ -11,6 +11,7 @@ getgenv().Variables = {
         KillauraEnabled = true,
         BowauraEnabled = true,
         KillauraRange = 20,
+        SwingEnabled = true,
         TeamCheck = false
     },
     SpeedVariables = {
@@ -111,6 +112,7 @@ local function Initialize()
     Tabs.Main:AddSection("Combat Features")
 
     local KillauraTarget, KillauraLoop = nil, nil
+    local BowStartTick, BowEndTick = nil, nil
     Tabs.Main:AddToggle("Killaura", { Title = "Killaura", Default = true }):OnChanged(function()
         getgenv().Variables["KillauraVariables"].KillauraEnabled = FluentOptions.Killaura.Value
         
@@ -121,32 +123,37 @@ local function Initialize()
 
                 if IsPlayerAlive(Player) then
                     KillauraTarget = GetNearestEntity(tonumber(getgenv().Variables["KillauraVariables"].KillauraRange), getgenv().Variables["KillauraVariables"].TeamCheck)
-
+                
                     if KillauraTarget and not table.find(getgenv().Variables["KillauraVariables"].BlacklistedEntities, KillauraTarget.Name) then
                         local ToolService = game:GetService("ReplicatedStorage"):WaitForChild("Modules"):WaitForChild("Knit"):WaitForChild("Services"):WaitForChild("ToolService")
-
+                
                         if ToolService then
                             local Sword = GetEquippedTool(Player, "Sword")
-
+                
                             if Sword then
+                                if getgenv().Variables["KillauraVariables"].SwingEnabled then
+                                    Sword:Activate()
+                                end
                                 ToolService:WaitForChild("RF"):WaitForChild("AttackPlayerWithSword"):InvokeServer(KillauraTarget, true, Sword.Name)
                                 ToolService:WaitForChild("RF"):WaitForChild("ToggleBlockSword"):InvokeServer(true, Sword.Name)
-
-                                if getgenv().Variables["KillauraVariables"].BowauraEnabled then
+                
+                                if getgenv().Variables["KillauraVariables"].BowauraEnabled and (not BowStartTick or tick() - BowStartTick > 3) then
+                                    BowStartTick = tick()
                                     if PlayerGui and PlayerGui.Hotbar.MainFrame.Background.Bar.ArrowProgress.Progress.Size == UDim2.new(0, 0, 1, 0) then
                                         local InvBow = GetToolFromBackpack(Player, "Bow")
-
+                
                                         if InvBow then
                                             SetEquippedTool(InvBow)
                                             
                                             local Bow = GetEquippedTool(Player, "Bow")
-
+                
                                             if Bow then
                                                 if type(KillauraTarget) == "userdata" and KillauraTarget:IsA("Model") then
                                                     local Target = Players:WaitForChild(KillauraTarget.Name)
-
+                
                                                     if Target then
                                                         Bow:WaitForChild("__comm__"):WaitForChild("RF"):FindFirstChild("Fire"):InvokeServer(Target.Character.HumanoidRootPart.Position, 9e9)
+                                                        BowEndTick = tick()
                                                     end
                                                 end
                                             end
@@ -155,14 +162,14 @@ local function Initialize()
                                 end
                             else
                                 local InvSword = GetToolFromBackpack(Player, "Sword")
-
+                
                                 if InvSword then
                                     SetEquippedTool(InvSword)
                                 end
                             end
                         end
                     end
-                end
+                end                
             end)
         else
             PlayerGui.Notifications.Notifications.Visible = true
@@ -181,6 +188,10 @@ local function Initialize()
 
     Tabs.Main:AddToggle("Bowaura", { Title = "Bow Aura", Default = true }):OnChanged(function()
         getgenv().Variables["KillauraVariables"].BowauraEnabled = FluentOptions.Bowaura.Value
+    end)
+
+    Tabs.Main:AddToggle("Swing", { Title = "Swing", Default = true }):OnChanged(function()
+        getgenv().Variables["KillauraVariables"].SwingEnabled = FluentOptions.Swing.Value
     end)
 
     Tabs.Main:AddSlider("KillauraRange", {
