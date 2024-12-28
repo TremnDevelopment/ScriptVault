@@ -298,7 +298,7 @@ local function Initialize()
                 
                     if humanoidRootPart and humanoid and IsPlayerAlive(Player) then
                         if UserInputService:IsKeyDown(Enum.KeyCode.Space) and (not UserInputService:GetFocusedTextBox()) then
-                            Player.Character.HumanoidRootPart.Velocity = Vector3.new(Player.Character.HumanoidRootPart.Velocity.X, 12, Player.Character.HumanoidRootPart.Velocity.Z)
+                            Player.Character.HumanoidRootPart.Velocity = Vector3.new(Player.Character.HumanoidRootPart.Velocity.X, 25, Player.Character.HumanoidRootPart.Velocity.Z)
                         end
 
                         for i = 1, getgenv().Variables["ScaffoldVariables"].ScaffoldExtend do
