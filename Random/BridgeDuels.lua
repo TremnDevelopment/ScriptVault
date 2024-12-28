@@ -1,10 +1,10 @@
-game:GetService("Chat"):Chat(game.Players.LocalPlayer.Character:FindFirstChild("Head"), "Merry Christmas from Keyware")
 local Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
 local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/SaveManager.lua"))()
 local InterfaceManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/InterfaceManager.lua"))()
 
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
 
 getgenv().Variables = {
     KillauraVariables = {
@@ -12,7 +12,6 @@ getgenv().Variables = {
         KillauraEnabled = true,
         BowauraEnabled = true,
         KillauraRange = 20,
-        SwingEnabled = true,
         TeamCheck = false
     },
     SpeedVariables = {
@@ -33,6 +32,11 @@ getgenv().Variables = {
 
 local Player = Players.LocalPlayer
 local PlayerGui = Player:WaitForChild("PlayerGui")
+
+local function ConvertPositionToVector(Position)
+    local ConvertedPosition = Vector3.new(math.floor((Position.X / 3) + 0.5) * 3, math.floor((Position.Y / 3) + 0.5) * 3, math.floor((Position.Z / 3) + 0.5) * 3)
+    return ConvertedPosition
+end
 
 local function IsPlayerAlive(player)
     local entityPlayer = Players:WaitForChild(player.Name)
@@ -84,9 +88,30 @@ local function GetToolFromBackpack(player, toolName)
     end
 end
 
-local function ConvertPositionToVector(Position)
-    local ConvertedPosition = Vector3.new(math.floor((Position.X / 3) + 0.5) * 3, math.floor((Position.Y / 3) + 0.5) * 3, math.floor((Position.Z / 3) + 0.5) * 3)
-    return ConvertedPosition
+local function PredictPosition(target, time)
+    local targetHRP = target.Character:FindFirstChild("HumanoidRootPart")
+    local targetVelocity = targetHRP.Velocity
+    local predictedPosition = targetHRP.Position + (targetVelocity * time)
+    return predictedPosition
+end
+
+local function CheckWall(v)
+    local Raycast, Result = nil, nil
+
+    local Direction = (v:FindFirstChild("HumanoidRootPart").Position - Player.Character:FindFirstChild("HumanoidRootPart").Position).Unit
+    local Distance = (v:FindFirstChild("HumanoidRootPart").Position - Player.Character:FindFirstChild("HumanoidRootPart").Position).Magnitude
+    if Direction and Distance then
+        Raycast = RaycastParams.new()
+        Raycast.FilterDescendantsInstances = {Player.Character}
+        Raycast.FilterType = Enum.RaycastFilterType.Exclude
+        Result = game.Workspace:Raycast(Player.Character:FindFirstChild("HumanoidRootPart").Position, Direction * Distance, Raycast)
+        if Result then
+            if not v:IsAncestorOf(Result.Instance) then
+                return false
+            end
+        end
+    end
+    return true
 end
 
 local function SetEquippedTool(Tool)
@@ -97,7 +122,7 @@ local function Initialize()
     local FluentOptions = Fluent.Options
 
     local Window = Fluent:CreateWindow({
-        Title = "Keyware | Bridge Duel Remake",
+        Title = "Keyware | Bridge Duel",
         SubTitle = "Whatever I made",
         TabWidth = 160,
         Size = UDim2.fromOffset(580, 460),
@@ -114,29 +139,18 @@ local function Initialize()
 
     local KillauraTarget, KillauraLoop = nil, nil
     local BowStartTick, BowEndTick, SwordStartTick, SwordEndTick = nil, 0, nil, 0
-    local KillauraSwingLoop = nil
     Tabs.Main:AddToggle("Killaura", { Title = "Killaura", Default = true }):OnChanged(function()
         getgenv().Variables["KillauraVariables"].KillauraEnabled = FluentOptions.Killaura.Value
     
         if getgenv().Variables["KillauraVariables"].KillauraEnabled then
-            task.spawn(function()
-                KillauraSwingLoop = RunService.Heartbeat:Connect(function()
-                    if getgenv().Variables["KillauraVariables"].SwingEnabled then
-                        local Sword = GetEquippedTool(Player, "Sword")
-                        if Sword then
-                            Sword:Activate()
-                        end
-                    end
-                end)
-            end)
             KillauraLoop = RunService.Heartbeat:Connect(function(deltaTime)
+                if not getgenv().Variables["KillauraVariables"].KillauraEnabled then return end
+
                 BowEndTick = BowEndTick + deltaTime
                 SwordEndTick = SwordEndTick + deltaTime
     
-                if not getgenv().Variables["KillauraVariables"].KillauraEnabled then return end
-    
                 if IsPlayerAlive(Player) then
-                    if not SwordStartTick or SwordEndTick > -9e9 then
+                    if not SwordStartTick or SwordEndTick > 0 then
                         SwordStartTick = tick(); SwordEndTick = 0
                         KillauraTarget = GetNearestEntity(tonumber(getgenv().Variables["KillauraVariables"].KillauraRange), getgenv().Variables["KillauraVariables"].TeamCheck)
     
@@ -145,27 +159,30 @@ local function Initialize()
     
                             if ToolService then
                                 local Sword = GetEquippedTool(Player, "Sword")
-                                
+    
                                 if Sword then
-                                    ToolService:WaitForChild("RF"):WaitForChild("AttackPlayerWithSword"):InvokeServer(KillauraTarget, true, Sword.Name)
+                                    if (KillauraTarget.HumanoidRootPart.Position - Player.Character.HumanoidRootPart.Position).Magnitude <= 20 then
+                                        for i = 1, 2 do
+                                            ToolService:WaitForChild("RF"):WaitForChild("AttackPlayerWithSword"):InvokeServer(KillauraTarget, true, Sword.Name)
+                                            task.wait(0.1)
+                                        end
+                                    end
                                     ToolService:WaitForChild("RF"):WaitForChild("ToggleBlockSword"):InvokeServer(true, Sword.Name)
-
-                                    if getgenv().Variables["KillauraVariables"].BowauraEnabled and BowEndTick > 3 then
+    
+                                    if getgenv().Variables["KillauraVariables"].BowauraEnabled and BowEndTick > 5 then
                                         BowStartTick = tick(); BowEndTick = 0
                                         if PlayerGui and PlayerGui.Hotbar.MainFrame.Background.Bar.ArrowProgress.Progress.Size == UDim2.new(0, 0, 1, 0) then
                                             local InvBow = GetToolFromBackpack(Player, "Bow")
-    
                                             if InvBow then
                                                 SetEquippedTool(InvBow)
     
                                                 local Bow = GetEquippedTool(Player, "Bow")
-    
                                                 if Bow then
-                                                    if type(KillauraTarget) == "userdata" and KillauraTarget:IsA("Model") then
+                                                    if KillauraTarget and KillauraTarget:IsA("Model") then
                                                         local Target = Players:WaitForChild(KillauraTarget.Name)
-    
-                                                        if Target then
-                                                            Bow:WaitForChild("__comm__"):WaitForChild("RF"):FindFirstChild("Fire"):InvokeServer(Target.Character.HumanoidRootPart.Position, 9e9)
+                                                        if Target and CheckWall(KillauraTarget) then
+                                                            local predictedPosition = PredictPosition(Target, 1)
+                                                            Bow:WaitForChild("__comm__"):WaitForChild("RF"):FindFirstChild("Fire"):InvokeServer(predictedPosition, 9e9)
                                                         end
                                                     end
                                                 end
@@ -174,7 +191,6 @@ local function Initialize()
                                     end
                                 else
                                     local InvSword = GetToolFromBackpack(Player, "Sword")
-    
                                     if InvSword then
                                         SetEquippedTool(InvSword)
                                     end
@@ -191,11 +207,6 @@ local function Initialize()
                 KillauraLoop:Disconnect()
                 KillauraLoop = nil
             end
-
-            if KillauraSwingLoop then
-                KillauraSwingLoop:Disconnect()
-                KillauraSwingLoop = nil
-            end
         end
     end)
     
@@ -207,16 +218,12 @@ local function Initialize()
         getgenv().Variables["KillauraVariables"].BowauraEnabled = FluentOptions.Bowaura.Value
     end)
 
-    Tabs.Main:AddToggle("Swing", { Title = "Swing", Default = true }):OnChanged(function()
-        getgenv().Variables["KillauraVariables"].SwingEnabled = FluentOptions.Swing.Value
-    end)
-
     Tabs.Main:AddSlider("KillauraRange", {
-        Title = "Killaura Range",
-        Description = "Changes the kill aura range",
+        Title = "Range",
+        Description = "Changes the range for the Killaura and Bowaura",
         Default = 20,
         Min = 20,
-        Max = 40,
+        Max = 160,
         Rounding = 2,
         Callback = function(Value)
             getgenv().Variables["KillauraVariables"].KillauraRange = Value
@@ -237,7 +244,7 @@ local function Initialize()
                     if velocity then
                         humanoidRootPart.Velocity = Vector3.new(velocity.X, humanoidRootPart.Velocity.Y, velocity.Z)
                     end
-                end             
+                end
             end)
         else
             if ApplyVelocityLoop ~= nil then
@@ -267,7 +274,7 @@ local function Initialize()
                 if IsPlayerAlive(Player) and Player.Character:FindFirstChildOfClass("Humanoid").WalkSpeed ~= 16 then
                     Player.Character:FindFirstChildOfClass("Humanoid").WalkSpeed = 16
                 end
-            end)
+            end)    
         else
             if NoslowFunction ~= nil then
                 NoslowFunction:Disconnect()
@@ -279,7 +286,7 @@ local function Initialize()
     local ScaffoldLoop = nil
     Tabs.Main:AddKeybind("scaffold", {
         Title = "Scaffold",
-        Mode = "Toggle", -- Always, Toggle, Hold
+        Mode = "Toggle",
         Default = getgenv().Variables["ScaffoldVariables"].ScaffoldKeybind,
 
         Callback = function(Value)
@@ -288,23 +295,27 @@ local function Initialize()
                 ScaffoldLoop = RunService.Heartbeat:Connect(function()
                     local humanoidRootPart = Player.Character:FindFirstChild("HumanoidRootPart")
                     local humanoid = Player.Character:FindFirstChildOfClass("Humanoid")
-                    
-                    if humanoidRootPart and humanoid then
+                
+                    if humanoidRootPart and humanoid and IsPlayerAlive(Player) then
+                        if UserInputService:IsKeyDown(Enum.KeyCode.Space) and (not UserInputService:GetFocusedTextBox()) then
+                            Player.Character.HumanoidRootPart.Velocity = Vector3.new(Player.Character.HumanoidRootPart.Velocity.X, 12, Player.Character.HumanoidRootPart.Velocity.Z)
+                        end
+
                         for i = 1, getgenv().Variables["ScaffoldVariables"].ScaffoldExtend do
                             local PlacePos = ConvertPositionToVector(humanoidRootPart.Position + humanoid.MoveDirection * (i * 3.5) - Vector3.new(0, (humanoidRootPart.Size.Y / 2) + humanoid.HipHeight + 1.5, 0))
                             
                             if PlacePos then
                                 local region = Region3.new(PlacePos - Vector3.new(0.5, 0.5, 0.5), PlacePos + Vector3.new(0.5, 0.5, 0.5))
                                 local parts = workspace:FindPartsInRegion3(region, nil, math.huge)
-                    
+                
                                 if #parts == 0 then
                                     game:GetService("ReplicatedStorage"):WaitForChild("Modules"):WaitForChild("Knit"):WaitForChild("Services"):WaitForChild("ToolService"):WaitForChild("RF"):WaitForChild("PlaceBlock"):InvokeServer(PlacePos)
                                 end
                             end
                             task.wait()
                         end
-                    end                    
-                end)
+                    end
+                end)                
             else
                 if ScaffoldLoop ~= nil then
                     ScaffoldLoop:Disconnect()
