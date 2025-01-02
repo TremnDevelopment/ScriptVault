@@ -370,7 +370,7 @@ local function Initialize()
     Player.OnTeleport:Connect(function()
         if queueteleport and (not TeleportCheck) then
             TeleportCheck = true
-            queueteleport("loadstring(game:HttpGet('https://github.com/TremnDevelopment/ScriptVault/blob/main/Random/BridgeDuels.lua'))()")
+            queueteleport("loadstring(game:HttpGet('https://raw.githubusercontent.com/TremnDevelopment/ScriptVault/refs/heads/main/Random/BridgeDuels.lua'))()")
         end
     end)
 end
