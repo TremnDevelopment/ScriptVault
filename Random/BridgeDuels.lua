@@ -7,7 +7,6 @@ local cloneref = cloneref or function(o) return o end
 local Players = cloneref(game:GetService("Players"))
 local RunService = cloneref(game:GetService("RunService"))
 local UserInputService = cloneref(game:GetService("UserInputService"))
-local queueteleport = (syn and syn.queue_on_teleport) or queue_on_teleport or (fluxus and fluxus.queue_on_teleport) -- thanks to infinite yield
 
 getgenv().Variables = {
     KillauraVariables = {
