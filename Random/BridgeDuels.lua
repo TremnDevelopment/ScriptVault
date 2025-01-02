@@ -11,7 +11,7 @@ local queueteleport = (syn and syn.queue_on_teleport) or queue_on_teleport or (f
 
 getgenv().Variables = {
     KillauraVariables = {
-        BlacklistedEntities = {"Transport_Chicken"},
+        BlacklistedEntities = {"Transport_Justice"},
         KillauraEnabled = true,
         BowauraEnabled = false,
         KillauraRange = 20,
@@ -165,7 +165,10 @@ local function Initialize()
     
                                 if Sword then
                                     if (KillauraTarget.HumanoidRootPart.Position - Player.Character.HumanoidRootPart.Position).Magnitude <= 20 then
-                                        ToolService:WaitForChild("RF"):WaitForChild("AttackPlayerWithSword"):InvokeServer(KillauraTarget, true, Sword.Name)
+										for i = 1, 2 do
+                                        	ToolService:WaitForChild("RF"):WaitForChild("AttackPlayerWithSword"):InvokeServer(KillauraTarget, true, Sword.Name)
+											task.wait(0.1)
+										end
                                     end
 
                                     ToolService:WaitForChild("RF"):WaitForChild("ToggleBlockSword"):InvokeServer(true, Sword.Name)
@@ -352,15 +355,7 @@ local function Initialize()
 
     Window:SelectTab(1)
     Fluent:Notify({ Title = "Keyware", Content = "The script has been loaded.", Duration = 8 })
-        SaveManager:LoadAutoloadConfig()
-
-    local TeleportCheck = false
-    Player.OnTeleport:Connect(function()
-        if queueteleport and (not TeleportCheck) then
-            TeleportCheck = true
-            queueteleport("loadstring(game:HttpGet('https://raw.githubusercontent.com/TremnDevelopment/ScriptVault/refs/heads/main/Random/BridgeDuels.lua'))()")
-        end
-    end)
+    SaveManager:LoadAutoloadConfig()
 end
 
 Initialize()
