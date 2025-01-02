@@ -316,7 +316,6 @@ local function Initialize()
                                     game:GetService("ReplicatedStorage"):WaitForChild("Modules"):WaitForChild("Knit"):WaitForChild("Services"):WaitForChild("ToolService"):WaitForChild("RF"):WaitForChild("PlaceBlock"):InvokeServer(PlacePos)
                                 end
                             end
-                            task.wait()
                         end
                     end
                 end)                
@@ -338,7 +337,7 @@ local function Initialize()
         Description = "The amount to extend when scaffolding",
         Default = getgenv().Variables["ScaffoldVariables"].ScaffoldExtend,
         Min = 2,
-        Max = 10,
+        Max = 6,
         Rounding = 1,
         Callback = function(Value)
             getgenv().Variables["ScaffoldVariables"].ScaffoldExtend = Value
