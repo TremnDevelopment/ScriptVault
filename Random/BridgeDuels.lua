@@ -5,14 +5,16 @@ local InterfaceManager = loadstring(game:HttpGet("https://raw.githubusercontent.
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
+local queueteleport = (syn and syn.queue_on_teleport) or queue_on_teleport or (fluxus and fluxus.queue_on_teleport) -- thanks to infinite yield
 
 getgenv().Variables = {
     KillauraVariables = {
         BlacklistedEntities = {"Transport_Chicken"},
         KillauraEnabled = true,
-        BowauraEnabled = true,
+        BowauraEnabled = false,
         KillauraRange = 20,
-        TeamCheck = false
+        LookAtEnabled = false,
+        TeamCheck = true
     },
     SpeedVariables = {
         NoslowEnabled = true,
@@ -161,12 +163,19 @@ local function Initialize()
                                 local Sword = GetEquippedTool(Player, "Sword")
     
                                 if Sword then
+                                    if getgenv().Variables["KillauraVariables"].LookAtEnabled then
+                                        task.spawn(function()
+                                            Player.Character.HumanoidRootPart.CFrame = CFrame.lookAt(Player.Character.HumanoidRootPart.Position, KillauraTarget.HumanoidRootPart.Position)
+                                        end)   
+                                    end
+
                                     if (KillauraTarget.HumanoidRootPart.Position - Player.Character.HumanoidRootPart.Position).Magnitude <= 20 then
                                         for i = 1, 2 do
                                             ToolService:WaitForChild("RF"):WaitForChild("AttackPlayerWithSword"):InvokeServer(KillauraTarget, true, Sword.Name)
                                             task.wait(0.1)
                                         end
                                     end
+
                                     ToolService:WaitForChild("RF"):WaitForChild("ToggleBlockSword"):InvokeServer(true, Sword.Name)
     
                                     if getgenv().Variables["KillauraVariables"].BowauraEnabled and BowEndTick > 5 then
@@ -181,7 +190,7 @@ local function Initialize()
                                                     if KillauraTarget and KillauraTarget:IsA("Model") then
                                                         local Target = Players:WaitForChild(KillauraTarget.Name)
                                                         if Target and CheckWall(KillauraTarget) then
-                                                            local predictedPosition = PredictPosition(Target, 1)
+                                                            local predictedPosition = PredictPosition(Target, deltaTime)
                                                             Bow:WaitForChild("__comm__"):WaitForChild("RF"):FindFirstChild("Fire"):InvokeServer(predictedPosition, 9e9)
                                                         end
                                                     end
@@ -210,12 +219,16 @@ local function Initialize()
         end
     end)
     
-    Tabs.Main:AddToggle("TeamCheck", { Title = "Team Check", Default = false }):OnChanged(function()
+    Tabs.Main:AddToggle("TeamCheck", { Title = "Team Check", Default = true }):OnChanged(function()
         getgenv().Variables["KillauraVariables"].TeamCheck = FluentOptions.TeamCheck.Value
     end)
 
-    Tabs.Main:AddToggle("Bowaura", { Title = "Bow Aura", Default = true }):OnChanged(function()
+    Tabs.Main:AddToggle("Bowaura", { Title = "Bow Aura", Default = false }):OnChanged(function()
         getgenv().Variables["KillauraVariables"].BowauraEnabled = FluentOptions.Bowaura.Value
+    end)
+
+    Tabs.Main:AddToggle("lookAt", { Title = "Look At", Default = false }):OnChanged(function()
+        getgenv().Variables["KillauraVariables"].LookAtEnabled = FluentOptions.lookAt.Value
     end)
 
     Tabs.Main:AddSlider("KillauraRange", {
@@ -341,7 +354,7 @@ local function Initialize()
         end
     })
 
-    Tabs.Main:AddSection("BETA Features")
+    Tabs.Main:AddSection("BETA Features")   
 
     InterfaceManager:SetLibrary(Fluent)
     SaveManager:SetLibrary(Fluent)
@@ -352,6 +365,14 @@ local function Initialize()
     Window:SelectTab(1)
     Fluent:Notify({ Title = "Keyware", Content = "The script has been loaded.", Duration = 8 })
     SaveManager:LoadAutoloadConfig()
+
+    local TeleportCheck = false
+    Player.OnTeleport:Connect(function()
+        if queueteleport and (not TeleportCheck) then
+            TeleportCheck = true
+            queueteleport("loadstring(game:HttpGet('https://github.com/TremnDevelopment/ScriptVault/blob/main/Random/BridgeDuels.lua'))()")
+        end
+    end)
 end
 
 Initialize()
