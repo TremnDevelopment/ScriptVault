@@ -8,7 +8,7 @@ local UserInputService = game:GetService("UserInputService")
 
 getgenv().Variables = {
     KillauraVariables = {
-        BlacklistedEntities = {"Transport_Rice"},
+        BlacklistedEntities = {"Transport_Chicken"},
         KillauraEnabled = true,
         BowauraEnabled = true,
         KillauraRange = 20,
