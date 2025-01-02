@@ -13,7 +13,6 @@ getgenv().Variables = {
         KillauraEnabled = true,
         BowauraEnabled = false,
         KillauraRange = 20,
-        LookAtEnabled = false,
         TeamCheck = true
     },
     SpeedVariables = {
@@ -163,12 +162,6 @@ local function Initialize()
                                 local Sword = GetEquippedTool(Player, "Sword")
     
                                 if Sword then
-                                    if getgenv().Variables["KillauraVariables"].LookAtEnabled then
-                                        task.spawn(function()
-                                            Player.Character.HumanoidRootPart.CFrame = CFrame.lookAt(Player.Character.HumanoidRootPart.Position, KillauraTarget.HumanoidRootPart.Position)
-                                        end)   
-                                    end
-
                                     if (KillauraTarget.HumanoidRootPart.Position - Player.Character.HumanoidRootPart.Position).Magnitude <= 20 then
                                         for i = 1, 2 do
                                             ToolService:WaitForChild("RF"):WaitForChild("AttackPlayerWithSword"):InvokeServer(KillauraTarget, true, Sword.Name)
@@ -225,10 +218,6 @@ local function Initialize()
 
     Tabs.Main:AddToggle("Bowaura", { Title = "Bow Aura", Default = false }):OnChanged(function()
         getgenv().Variables["KillauraVariables"].BowauraEnabled = FluentOptions.Bowaura.Value
-    end)
-
-    Tabs.Main:AddToggle("lookAt", { Title = "Look At", Default = false }):OnChanged(function()
-        getgenv().Variables["KillauraVariables"].LookAtEnabled = FluentOptions.lookAt.Value
     end)
 
     Tabs.Main:AddSlider("KillauraRange", {
@@ -364,7 +353,7 @@ local function Initialize()
 
     Window:SelectTab(1)
     Fluent:Notify({ Title = "Keyware", Content = "The script has been loaded.", Duration = 8 })
-    SaveManager:LoadAutoloadConfig()
+        SaveManager:LoadAutoloadConfig()
 
     local TeleportCheck = false
     Player.OnTeleport:Connect(function()
