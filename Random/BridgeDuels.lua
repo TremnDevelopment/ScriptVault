@@ -10,7 +10,7 @@ local UserInputService = cloneref(game:GetService("UserInputService"))
 
 getgenv().Variables = {
     KillauraVariables = {
-        BlacklistedEntities = {"Transport_Justice"},
+        BlacklistedEntities = {"Transport_Month"},
         KillauraEnabled = true,
         BowauraEnabled = false,
         KillauraRange = 20,
