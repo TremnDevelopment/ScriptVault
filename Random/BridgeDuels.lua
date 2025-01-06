@@ -7,6 +7,9 @@ local cloneref = cloneref or function(o) return o end
 local Players = cloneref(game:GetService("Players"))
 local RunService = cloneref(game:GetService("RunService"))
 local UserInputService = cloneref(game:GetService("UserInputService"))
+local TweenService = cloneref(game:GetService("TweenService"))
+
+local OldC0
 
 getgenv().Variables = {
     KillauraVariables = {
@@ -14,7 +17,9 @@ getgenv().Variables = {
         KillauraEnabled = true,
         BowauraEnabled = false,
         KillauraRange = 20,
-        TeamCheck = true
+        TeamCheck = true,
+
+        SwingAnimation = {}
     },
     SpeedVariables = {
         NoslowEnabled = true,
@@ -90,6 +95,47 @@ local function GetToolFromBackpack(player, toolName)
     end
 end
 
+local function GetItemC0()
+    local ToolC0 = nil
+    local Viewmodel = game.Workspace.CurrentCamera:GetChildren()[1]
+    
+    if not OldC0 then
+        OldC0 = Viewmodel:FindFirstChildWhichIsA("Model"):WaitForChild("Handle"):FindFirstChild("MainPart").C0
+    end
+
+    if Viewmodel then
+        for _, model in pairs(Viewmodel:GetChildren()) do
+            if model:IsA("Model") then
+                for _, part in pairs(model:GetChildren()) do
+                    if part:IsA("Part") and part.Name == "Handle" then
+                        for _, motor in pairs(part:GetChildren()) do
+                            if motor:IsA("Motor6D") and motor.Name == "MainPart" then
+                                ToolC0 = motor
+                            end
+                        end
+                    end
+                end
+            end
+        end
+    end
+    return ToolC0
+end
+
+local function AnimateC0(animation)
+    local Tool = GetItemC0()
+    if Tool then
+        for _, anim in ipairs(animation) do
+            local newC0 = OldC0 * anim.CFrame
+            local Tween = TweenService:Create(Tool, TweenInfo.new(anim.Time, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {C0 = newC0})
+
+            if Tween then
+                Tween:Play()
+                Tween.Completed:Wait()
+            end
+        end
+    end
+end
+
 local function PredictPosition(target, time)
     local targetHRP = target.Character:FindFirstChild("HumanoidRootPart")
     local targetVelocity = targetHRP.Velocity
@@ -145,6 +191,16 @@ local function Initialize()
         getgenv().Variables["KillauraVariables"].KillauraEnabled = FluentOptions.Killaura.Value
     
         if getgenv().Variables["KillauraVariables"].KillauraEnabled then
+            task.spawn(function()
+                while getgenv().Variables["KillauraVariables"].KillauraEnabled do
+                    if IsPlayerAlive(Player) and (KillauraTarget and (KillauraTarget.HumanoidRootPart.Position - Player.Character.HumanoidRootPart.Position).Magnitude <= 20) and IsPlayerAlive(Players:WaitForChild(KillauraTarget.Name)) and GetItemC0() then
+                        if typeof(getgenv().Variables["KillauraVariables"].SwingAnimation) == "table" then
+                            AnimateC0(getgenv().Variables["KillauraVariables"].SwingAnimation)
+                        end
+                    end
+                    task.wait(.35)
+                end
+            end)
             KillauraLoop = RunService.Heartbeat:Connect(function(deltaTime)
                 if not getgenv().Variables["KillauraVariables"].KillauraEnabled then return end
 
@@ -232,6 +288,41 @@ local function Initialize()
             getgenv().Variables["KillauraVariables"].KillauraRange = Value
         end
     })
+
+    Tabs.Main:AddToggle("CustomSwing", { Title = 'Custom Swing Animation', Default = false })
+
+    Tabs.Main:AddDropdown("Animation", {
+        Title = "Swing Animation",
+        Values = {"Strike", "Slash", "Test"},
+        Multi = false, -- set to true to make multiple
+        Default = 1,
+    }):OnChanged(function()
+        if FluentOptions.Animation.Value == "Strike" then
+            getgenv().Variables["KillauraVariables"].SwingAnimation = {
+                {CFrame = CFrame.new(-2.5, 0, 3.5) * CFrame.Angles(math.rad(0), math.rad(25), math.rad(60)), Time = 0.1},
+                {CFrame = CFrame.new(-0.5, 0, 1.3) * CFrame.Angles(math.rad(0), math.rad(25), math.rad(60)), Time = 0.1},
+                {CFrame = CFrame.new(0.5, 0, 1.5) * CFrame.Angles(math.rad(0), math.rad(30), math.rad(60)), Time = 0.1},
+                {CFrame = CFrame.new(1.5, 0, 2.0) * CFrame.Angles(math.rad(0), math.rad(35), math.rad(60)), Time = 0.1},
+                {CFrame = CFrame.new(0, 0, 0) * CFrame.Angles(math.rad(0), math.rad(0), math.rad(0)), Time = 0.1},
+            }
+        elseif FluentOptions.Animation.Value == "Slash" then
+            getgenv().Variables["KillauraVariables"].SwingAnimation = {
+                {CFrame = CFrame.new(0, 0, 0) * CFrame.Angles(math.rad(30), math.rad(0), math.rad(0)), Time = 0.2},
+                {CFrame = CFrame.new(0, 0, -2) * CFrame.Angles(math.rad(30), math.rad(45), math.rad(0)), Time = 0.15},
+                {CFrame = CFrame.new(0, 0, -1.5) * CFrame.Angles(math.rad(15), math.rad(90), math.rad(0)), Time = 0.1},
+                {CFrame = CFrame.new(0, 0, 0) * CFrame.Angles(math.rad(0), math.rad(0), math.rad(0)), Time = 0.15},
+            }
+        elseif FluentOptions.Animation.Value == "Test" then
+            getgenv().Variables["KillauraVariables"].SwingAnimation = {
+                {CFrame = CFrame.new(0, 0, 0) * CFrame.Angles(math.rad(0), math.rad(0), math.rad(0)), Time = 0.2},
+                {CFrame = CFrame.new(0, 0, 0) * CFrame.Angles(math.rad(0), math.rad(-45), math.rad(0)), Time = 0.3},
+                {CFrame = CFrame.new(0, 0, -1) * CFrame.Angles(math.rad(0), math.rad(-20), math.rad(0)), Time = 0.2},
+                {CFrame = CFrame.new(0, 0, -1.5) * CFrame.Angles(math.rad(0), math.rad(0), math.rad(0)), Time = 0.2},
+                {CFrame = CFrame.new(0, 0, -1) * CFrame.Angles(math.rad(0), math.rad(30), math.rad(0)), Time = 0.15},
+                {CFrame = CFrame.new(0, 0, 0) * CFrame.Angles(math.rad(0), math.rad(0), math.rad(0)), Time = 0.2},
+            }
+        end
+    end)
 
     Tabs.Main:AddSection("Movement Features")
 
