@@ -432,8 +432,8 @@ local function Initialize()
         Callback = function(Value)
             getgenv().Variables["ScaffoldVariables"].ScaffoldExtend = Value
         end
-    })
-
+    })	
+	
     Tabs.Main:AddSection("BETA Features")   
 
     InterfaceManager:SetLibrary(Fluent)
