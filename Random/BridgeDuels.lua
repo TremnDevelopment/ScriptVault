@@ -221,7 +221,7 @@ local function Initialize()
                                 if Sword then
                                     if (KillauraTarget.HumanoidRootPart.Position - Player.Character.HumanoidRootPart.Position).Magnitude <= 20 then
 										for i = 1, 2 do
-                                        	ToolService:WaitForChild("RF"):WaitForChild("AttackPlayerWithSword"):InvokeServer(KillauraTarget, true, Sword.Name)
+                                        	ToolService:WaitForChild("RF"):WaitForChild("AttackPlayerWithSword"):InvokeServer(KillauraTarget, true, Sword.Name, "\226\128\139")
 											task.wait(0.1)
 										end
                                     end
